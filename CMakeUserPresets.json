@@ -1,13 +1,20 @@
 {
     "version": 2,
     "configurePresets": [
-      {
-        "name": "default",
-        "inherits": "vcpkg",
-        "environment": {
-          "VCPKG_ROOT": "E:/Repositories/vcpkg"
+        {
+            "name": "default",
+            "inherits": "vcpkg",
+            "environment": {
+                "VCPKG_ROOT": "E:/Repositories/vcpkg"
+            }
         }
-      }
+    ],
+    "buildPresets": [
+        {
+            "name": "defult1",
+            "description": "",
+            "displayName": "",
+            "configurePreset": "default"
+        }
     ]
-  }
-  
+}
