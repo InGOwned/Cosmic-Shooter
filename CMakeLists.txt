@@ -1,35 +1,70 @@
-cmake_minimum_required(VERSION 3.15) # Проверка версии CMake.
-									 # Если версия установленой программы
-									 # старее указаной, произайдёт аварийный выход.
+cmake_minimum_required(VERSION 3.15)
 
-set(PROJECT_NAME sfml_sample)				 # имя проекта		 
-project("${PROJECT_NAME}")
+set(PROJECT_NAME arkanoid_game)  # Более подходящее имя для проекта
+project("${PROJECT_NAME}" LANGUAGES CXX)
 
-
-set(CMAKE_CXX_STANDARD 17)			 # устанавливаем 17 стандарт языка
+# Настройки компилятора
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
+# Настройка для Windows
+if(WIN32)
+    add_definitions(-DSFML_STATIC)
+endif()
 
-add_definitions(-DSFML_STATIC)		 # дефайны
+set(SFML_DIR "E:/Загрузки/SFML-2.6.1-windows-vc17-64-bit/SFML-2.6.1/lib/cmake/SFML")
 
-include_directories("inc/")
+# Поиск SFML
+find_package(SFML 2.5 COMPONENTS graphics window system audio REQUIRED)
+link_directories("${SFML_DIR}/../../lib")
 
-include_directories("ext/SFML/include/")
-link_directories("ext/SFML/lib/")	
+# Настройка структуры проекта
+set(SOURCE_DIR src)
+set(INCLUDE_DIR include)
 
-add_executable("${PROJECT_NAME}" main.cpp)
-											
-target_link_libraries("${PROJECT_NAME}" sfml-graphics-s-d
-						  sfml-window-s-d
-						  sfml-system-s-d
-						  opengl32
-						  freetype
-						  winmm
-						  gdi32
-						  sfml-audio-s-d
-						  flac
-						  vorbisenc
-						  vorbisfile
-						  vorbis
-						  ogg)
+# Список исходных файлов
+file(GLOB SOURCES 
+    "${SOURCE_DIR}/*.cpp"
+)
+
+# Создание исполняемого файла
+add_executable(${PROJECT_NAME} 
+    ${SOURCES}
+    "${SOURCE_DIR}/main.cpp"
+)
+
+# Подключение заголовочных файлов
+target_include_directories(arkanoid_game PRIVATE
+    ${CMAKE_SOURCE_DIR}/inc  # Для заголовков
+    ${SFML_INCLUDE_DIR}      # Для SFML
+)
+
+link_directories("${SFML_DIR}/../../lib")
+# Подключение SFML библиотек
+target_link_libraries(arkanoid_game PRIVATE sfml-graphics sfml-window sfml-system sfml-audio)
+
+# Дополнительные библиотеки для Windows
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        opengl32
+        freetype
+        winmm
+        gdi32
+        openal32
+        flac
+        vorbisenc
+        vorbisfile
+        vorbis
+        ogg
+    )
+endif()
+
+# Копирование DLL файлов (для Windows)
+if(WIN32)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${SFML_ROOT}/bin"
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>
+    )
+endif()
