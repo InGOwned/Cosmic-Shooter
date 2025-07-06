@@ -1,12 +1,11 @@
-#ifndef GAME_H
-#define GAME_H
+#pragma once
 
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <memory>
 #include "Player.h"
-#include "Enemy.h"
 #include "Bullet.h"
+#include "Enemy.h"
 #include "Constants.h"
 
 class Game {
@@ -25,10 +24,8 @@ private:
     Player player;
     std::vector<std::unique_ptr<Enemy>> enemies;
     std::vector<std::unique_ptr<Bullet>> bullets;
-    int enemySpawnTimer = 0;
-    int score = 0;
+    unsigned int score = 0;
+    unsigned int enemySpawnTimer = 0;
     sf::Font font;
     sf::Text scoreText;
 };
-
-#endif // GAME_H

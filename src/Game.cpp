@@ -1,17 +1,26 @@
 #include "Game.h"
 #include <iostream>
+#include <algorithm> // Для std::remove_if
+#include <memory>    // Для std::make_unique
 
-Game::Game() : window(sf::VideoMode(Constants::WINDOW_WIDTH, Constants::WINDOW_HEIGHT), Constants::WINDOW_TITLE) {
+// Конструктор Game
+Game::Game() 
+    : window(sf::VideoMode(sf::Vector2u(Constants::WINDOW_WIDTH, Constants::WINDOW_HEIGHT)), sf::String(Constants::WINDOW_TITLE))
+{
     window.setFramerateLimit(60);
     
-    if (!font.loadFromFile("assets/fonts/arial.ttf")) {
+    // Загрузка шрифта
+    // В SFML 3.0.0 loadFromFile является статическим методом и возвращает sf::Font
+    font = sf::Font::loadFromFile("assets/fonts/arial.ttf");
+    if (font.getNativeHandle() == 0) { // Проверка на успешную загрузку шрифта
         std::cerr << "Failed to load font" << std::endl;
     }
     
+    // Инициализация scoreText с шрифтом
     scoreText.setFont(font);
     scoreText.setCharacterSize(24);
     scoreText.setFillColor(sf::Color::White);
-    scoreText.setPosition(10, 10);
+    scoreText.setPosition(sf::Vector2f(10.f, 10.f)); // Используем sf::Vector2f
 }
 
 void Game::run() {
@@ -23,16 +32,17 @@ void Game::run() {
 }
 
 void Game::processEvents() {
-    sf::Event event;
+    sf::Event event; // sf::Event больше не имеет конструктора по умолчанию, объявляем без инициализации
     while (window.pollEvent(event)) {
         if (event.type == sf::Event::Closed) {
             window.close();
         }
         
-        if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
+        // sf::Keyboard::Space теперь sf::Keyboard::Key::Space
+        if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Key::Space) {
             bullets.emplace_back(std::make_unique<Bullet>(
-                player.getBounds().left, 
-                player.getBounds().top
+                player.getBounds().left(), // Используем .left() вместо .left
+                player.getBounds().top()   // Используем .top() вместо .top
             ));
         }
     }
@@ -67,7 +77,7 @@ void Game::update() {
     
     // Remove out of screen bullets
     bullets.erase(std::remove_if(bullets.begin(), bullets.end(), 
-        [](const std::unique_ptr<Bullet>& b) { return b->isOutOfScreen(); }), 
+        [](const std::unique_ptr<Bullet>& b) { return !b->isActive; }), 
         bullets.end());
     
     checkCollisions();
@@ -94,13 +104,14 @@ void Game::render() {
 
 void Game::spawnEnemy() {
     float x = static_cast<float>(rand() % (Constants::WINDOW_WIDTH - Constants::ENEMY_SIZE));
-    enemies.emplace_back(std::make_unique<Enemy>(x, -Constants::ENEMY_SIZE));
+    enemies.emplace_back(std::make_unique<Enemy>(x, -static_cast<float>(Constants::ENEMY_SIZE))); // Приведение к float
 }
 
 void Game::checkCollisions() {
     // Bullet-Enemy collisions
     for (auto& bullet : bullets) {
         for (auto& enemy : enemies) {
+            // intersects теперь принимает const sf::Rect<T>& 
             if (bullet->getBounds().intersects(enemy->getBounds())) {
                 bullet->isActive = false;
                 enemy->isActive = false;

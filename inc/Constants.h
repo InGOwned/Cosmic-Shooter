@@ -1,21 +1,26 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#include <string>
+
 namespace Constants {
-    const int WINDOW_WIDTH = 800;
-    const int WINDOW_HEIGHT = 600;
-    const std::string WINDOW_TITLE = "Cosmic Shooter";
+    // Используем constexpr для compile-time констант
+    static constexpr int WINDOW_WIDTH = 800;
+    static constexpr int WINDOW_HEIGHT = 600;
+    
+    // Для строк используем constexpr с std::string_view (C++17)
+    static constexpr std::string_view WINDOW_TITLE = "Cosmic Shooter";
 
-    const float PLAYER_SPEED = 5.0f;
-    const float ENEMY_SPEED = 2.0f;
-    const float BULLET_SPEED = 7.0f;
+    static constexpr float PLAYER_SPEED = 5.0f;
+    static constexpr float ENEMY_SPEED = 2.0f;
+    static constexpr float BULLET_SPEED = 7.0f;
 
-    const int PLAYER_SIZE = 50;
-    const int ENEMY_SIZE = 40;
-    const int BULLET_SIZE = 10;
+    static constexpr int PLAYER_SIZE = 50;
+    static constexpr int ENEMY_SIZE = 40;
+    static constexpr int BULLET_SIZE = 10;
 
-    const int ENEMY_SPAWN_INTERVAL = 60; // frames
-    const int MAX_ENEMIES = 10;
+    static constexpr int ENEMY_SPAWN_INTERVAL = 60; // frames
+    static constexpr int MAX_ENEMIES = 10;
 }
 
 #endif // CONSTANTS_H

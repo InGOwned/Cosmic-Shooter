@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 3.15)
 
-list(APPEND CMAKE_PREFIX_PATH "$ENV{VCPKG_ROOT}/installed/x64-windows")
-find_package(OpenAL CONFIG REQUIRED)
+# Указываем путь к вашим локальным библиотекам SFML, Ogg, Vorbis
+set(SFML_ROOT "${CMAKE_SOURCE_DIR}/ext/SFML")
 
-set(PROJECT_NAME arkanoid_game)  # Более подходящее имя для проекта
+# Добавляем путь Vcpkg. Он будет использоваться для других библиотек
+list(APPEND CMAKE_PREFIX_PATH "$ENV{VCPKG_ROOT}/installed/x64-windows")
+
+set(PROJECT_NAME arkanoid_game)
 project("${PROJECT_NAME}" LANGUAGES CXX)
 
 # Настройки компилятора
@@ -16,18 +19,9 @@ if(WIN32)
     add_definitions(-DSFML_STATIC)
 endif()
 
-set(SFML_DIR "E:/Загрузки/SFML-2.6.1-windows-vc17-64-bit/SFML-2.6.1/lib/cmake/SFML")
-set(OpenAL_DIR "$ENV{VCPKG_ROOT}/installed/x64-windows/share/openal")
-set(OGG_LIB_PATH "E:/Repositories/vcpkg/installed/x64-windows/lib")
-set(VORBIS_LIB_PATH "E:/Repositories/vcpkg/installed/x64-windows/lib")
-
-# Поиск SFML
-find_package(SFML 2.6.1 COMPONENTS graphics window system audio REQUIRED)
-link_directories("${SFML_DIR}/../../lib")
-
 # Настройка структуры проекта
 set(SOURCE_DIR src)
-set(INCLUDE_DIR include)
+set(INCLUDE_DIR inc)
 
 # Список исходных файлов
 file(GLOB SOURCES 
@@ -41,40 +35,39 @@ add_executable(${PROJECT_NAME}
 )
 
 # Подключение заголовочных файлов
-target_include_directories(arkanoid_game PRIVATE
-    ${CMAKE_SOURCE_DIR}/inc  # Для заголовков
-    ${SFML_INCLUDE_DIR}      # Для SFML
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_SOURCE_DIR}/${INCLUDE_DIR}
+    "${SFML_ROOT}/include" # Явно указываем путь к include SFML
 )
 
+# Поиск зависимостей (эти библиотеки, вероятно, из Vcpkg)
+find_package(OpenAL CONFIG REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(flac REQUIRED)
-find_package(Ogg REQUIRED)
-find_package(Vorbis REQUIRED COMPONENTS vorbis vorbisenc vorbisfile)
 
+# ИЗМЕНЕНО: Удалены find_package для Ogg и Vorbis
 
-link_directories("${SFML_DIR}/../../lib")
-# Подключение SFML библиотек
-target_link_libraries(arkanoid_game PRIVATE 
-    sfml-graphics 
-    sfml-window 
-    sfml-system 
-    sfml-audio 
+# Подключение библиотек
+target_link_libraries(${PROJECT_NAME} PRIVATE 
+    "${SFML_ROOT}/lib/sfml-graphics-s.lib" # Явно указываем путь к статической библиотеке SFML Graphics
+    "${SFML_ROOT}/lib/sfml-window-s.lib"  # Явно указываем путь к статической библиотеке SFML Window
+    "${SFML_ROOT}/lib/sfml-system-s.lib"  # Явно указываем путь к статической библиотеке SFML System
+    "${SFML_ROOT}/lib/sfml-audio-s.lib"   # Явно указываем путь к статической библиотеке SFML Audio
     OpenAL::OpenAL 
-    ${flac_LIBRARIES} 
-    Vorbis::vorbis 
-    Vorbis::vorbisenc 
-    Vorbis::vorbisfile 
-    Ogg::ogg
+    Freetype::Freetype 
+    ${flac_LIBRARIES}
+    "${SFML_ROOT}/lib/ogg.lib"           # Явно указываем путь к библиотеке Ogg
+    "${SFML_ROOT}/lib/vorbis.lib"        # Явно указываем путь к библиотеке Vorbis
+    "${SFML_ROOT}/lib/vorbisenc.lib"     # Явно указываем путь к библиотеке Vorbisenc
+    "${SFML_ROOT}/lib/vorbisfile.lib"    # Явно указываем путь к библиотеке Vorbisfile
 )
 
 # Дополнительные библиотеки для Windows
 if(WIN32)
     target_link_libraries(${PROJECT_NAME} PRIVATE
         opengl32
-        freetype
         winmm
         gdi32
-        # ogg
     )
 endif()
 

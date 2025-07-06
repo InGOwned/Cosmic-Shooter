@@ -3,7 +3,8 @@
 Enemy::Enemy(float x, float y) {
     shape.setSize(sf::Vector2f(Constants::ENEMY_SIZE, Constants::ENEMY_SIZE));
     shape.setFillColor(sf::Color::Red);
-    shape.setPosition(x, y);
+    // Изменено: setPosition теперь принимает sf::Vector2f
+    shape.setPosition(sf::Vector2f(x, y));
     velocity.y = Constants::ENEMY_SPEED;
 }
 
