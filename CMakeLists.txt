@@ -16,7 +16,7 @@ endif()
 set(SFML_DIR "E:/Загрузки/SFML-2.6.1-windows-vc17-64-bit/SFML-2.6.1/lib/cmake/SFML")
 
 # Поиск SFML
-find_package(SFML 2.5 COMPONENTS graphics window system audio REQUIRED)
+find_package(SFML 2.6 COMPONENTS graphics window system audio REQUIRED)
 link_directories("${SFML_DIR}/../../lib")
 
 # Настройка структуры проекта
@@ -40,7 +40,7 @@ target_include_directories(arkanoid_game PRIVATE
     ${SFML_INCLUDE_DIR}      # Для SFML
 )
 
-link_directories("${SFML_DIR}/../../lib")
+# link_directories("${SFML_DIR}/../../lib")
 # Подключение SFML библиотек
 target_link_libraries(arkanoid_game PRIVATE sfml-graphics sfml-window sfml-system sfml-audio)
 
