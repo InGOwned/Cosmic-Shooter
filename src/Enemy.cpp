@@ -1,25 +1,33 @@
 #include "Enemy.h"
+#include <iostream>
 
-Enemy::Enemy(float x, float y) {
-    shape.setSize(sf::Vector2f(Constants::ENEMY_SIZE, Constants::ENEMY_SIZE));
-    shape.setFillColor(sf::Color::Red);
-    // Изменено: setPosition теперь принимает sf::Vector2f
-    shape.setPosition(sf::Vector2f(x, y));
+Enemy::Enemy(float x, float y)
+    : texture(),  // Инициализируем текстуру
+      sprite(texture)  // Инициализируем спрайт с текстурой
+    {
+    if (!texture.loadFromFile("E:/Repositories/sfml_sample_3_0/assets/images/enemy.png")) {
+        std::cerr << "Failed to load enemy texture" << std::endl;
+    }
+    sprite.setTexture(texture, true);
+    sprite.setScale(sf::Vector2f(Constants::ENEMY_SIZE / sprite.getLocalBounds().size.x, Constants::ENEMY_SIZE / sprite.getLocalBounds().size.y));
+    sprite.setPosition(sf::Vector2f(x, y));
     velocity.y = Constants::ENEMY_SPEED;
 }
 
 void Enemy::update() {
-    shape.move(velocity);
+    sprite.move(velocity);
 }
 
 void Enemy::draw(sf::RenderWindow& window) {
-    window.draw(shape);
+    window.draw(sprite);
 }
 
 sf::FloatRect Enemy::getBounds() const {
-    return shape.getGlobalBounds();
+    return sprite.getGlobalBounds();
 }
 
 bool Enemy::isOutOfScreen() const {
-    return shape.getPosition().y > Constants::WINDOW_HEIGHT;
+    return sprite.getPosition().y > Constants::WINDOW_HEIGHT;
 }
+
+

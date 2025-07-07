@@ -13,11 +13,14 @@ public:
     void draw(sf::RenderWindow& window);
     sf::FloatRect getBounds() const;
     bool isOutOfScreen() const;
-    bool isActive = true;  // Добавлен публичный член
+    bool isActive = true;  
 
 private:
-    sf::RectangleShape shape;
-    sf::Vector2f velocity;
+    sf::Texture texture;
+    sf::Sprite sprite;
+    // sf::Vector2f velocity; // Удалено, так как уже есть в GameObject
 };
 
 #endif // ENEMY_H
+
+
