@@ -1,7 +1,7 @@
 #include "Game.h"
 #include "Player.h"
-#include "Bullet.h"  // Явное включение
-#include "Enemy.h"   // Явное включение
+#include "Bullet.h"
+#include "Enemy.h"
 #include <iostream>
 #include <algorithm>
 #include <memory>
@@ -11,7 +11,10 @@ Game::Game()
     : window(sf::VideoMode(sf::Vector2u(static_cast<unsigned int>(Constants::WINDOW_WIDTH), 
                                         static_cast<unsigned int>(Constants::WINDOW_HEIGHT))), 
              std::string(Constants::WINDOW_TITLE)),
-      player() 
+      player(),
+      backgroundTexture(),
+      backgroundSprite(backgroundTexture) // Инициализируем спрайт с текстурой
+      
 {
     window.setFramerateLimit(60);
     
@@ -24,6 +27,17 @@ Game::Game()
         scoreText->setFillColor(sf::Color::White);
         scoreText->setPosition(sf::Vector2f(10.f, 10.f));
     }
+
+    // Загрузка текстуры фона
+    if (!backgroundTexture.loadFromFile("E:/Repositories/sfml_sample_3_0/assets/images/background2.jpg")) {
+        std::cerr << "Failed to load background texture" << std::endl;
+    }
+    backgroundSprite.setTexture(backgroundTexture, true);
+    // Масштабирование фона под размер окна
+    backgroundSprite.setScale(sf::Vector2f(
+        static_cast<float>(Constants::WINDOW_WIDTH) / backgroundTexture.getSize().x,
+        static_cast<float>(Constants::WINDOW_HEIGHT) / backgroundTexture.getSize().y
+    ));
 }
 
 void Game::run() {
@@ -85,6 +99,7 @@ void Game::update() {
 
 void Game::render() {
     window.clear(sf::Color::Black);
+    window.draw(backgroundSprite); // Отрисовка фона
     player.draw(window);
     
     for (auto& enemy : enemies) {
@@ -104,14 +119,8 @@ void Game::render() {
 void Game::spawnEnemy() {
     float x = static_cast<float>(std::rand() % (Constants::WINDOW_WIDTH - Constants::ENEMY_SIZE));
     enemies.push_back(std::make_unique<Enemy>(x, -static_cast<float>(Constants::ENEMY_SIZE)));
-
-    // enemies.push_back(std::make_unique<Enemy>(
-    // static_cast<float>(rand() % (Constants::WINDOW_WIDTH - Constants::ENEMY_SIZE)),
-    // -static_cast<float>(Constants::ENEMY_SIZE)
-    // ));
 }
 
-// Добавим вспомогательную функцию для проверки пересечения
 bool rectsIntersect(const sf::FloatRect& rect1, const sf::FloatRect& rect2) {
     return rect1.findIntersection(rect2).has_value();
 }
@@ -146,3 +155,4 @@ void Game::checkCollisions() {
         }
     }
 }
+

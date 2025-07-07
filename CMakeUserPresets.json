@@ -8,13 +8,5 @@
                 "VCPKG_ROOT": "E:/Repositories/vcpkg"
             }
         }
-    ],
-    "buildPresets": [
-        {
-            "name": "defult1",
-            "description": "",
-            "displayName": "",
-            "configurePreset": "default"
-        }
     ]
 }

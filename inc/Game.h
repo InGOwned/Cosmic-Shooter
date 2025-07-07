@@ -31,5 +31,9 @@ private:
     unsigned int score = 0;
     unsigned int enemySpawnTimer = 0;
     sf::Font font;
-    std::unique_ptr<sf::Text> scoreText;  // Изменено на unique_ptr
+    std::unique_ptr<sf::Text> scoreText;
+
+    sf::Texture backgroundTexture;
+    sf::Sprite backgroundSprite;
 };
+
