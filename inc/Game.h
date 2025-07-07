@@ -8,6 +8,10 @@
 #include "Enemy.h"
 #include "Constants.h"
 
+class Player;
+class Bullet;
+class Enemy;
+
 class Game {
 public:
     Game();
@@ -27,5 +31,5 @@ private:
     unsigned int score = 0;
     unsigned int enemySpawnTimer = 0;
     sf::Font font;
-    sf::Text scoreText;
+    std::unique_ptr<sf::Text> scoreText;  // Изменено на unique_ptr
 };

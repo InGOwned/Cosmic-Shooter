@@ -1,26 +1,29 @@
 #include "Game.h"
+#include "Player.h"
+#include "Bullet.h"  // Явное включение
+#include "Enemy.h"   // Явное включение
 #include <iostream>
-#include <algorithm> // Для std::remove_if
-#include <memory>    // Для std::make_unique
+#include <algorithm>
+#include <memory>
+#include <cstdlib> // Для rand()
 
-// Конструктор Game
-Game::Game() 
-    : window(sf::VideoMode(sf::Vector2u(Constants::WINDOW_WIDTH, Constants::WINDOW_HEIGHT)), sf::String(Constants::WINDOW_TITLE))
+Game::Game()
+    : window(sf::VideoMode(sf::Vector2u(static_cast<unsigned int>(Constants::WINDOW_WIDTH), 
+                                        static_cast<unsigned int>(Constants::WINDOW_HEIGHT))), 
+             std::string(Constants::WINDOW_TITLE)),
+      player() 
 {
     window.setFramerateLimit(60);
     
     // Загрузка шрифта
-    // В SFML 3.0.0 loadFromFile является статическим методом и возвращает sf::Font
-    font = sf::Font::loadFromFile("assets/fonts/arial.ttf");
-    if (font.getNativeHandle() == 0) { // Проверка на успешную загрузку шрифта
+    if (!font.openFromFile("assets/fonts/arial.ttf")) {
         std::cerr << "Failed to load font" << std::endl;
+    } else {
+        scoreText = std::make_unique<sf::Text>(font);
+        scoreText->setCharacterSize(24);
+        scoreText->setFillColor(sf::Color::White);
+        scoreText->setPosition(sf::Vector2f(10.f, 10.f));
     }
-    
-    // Инициализация scoreText с шрифтом
-    scoreText.setFont(font);
-    scoreText.setCharacterSize(24);
-    scoreText.setFillColor(sf::Color::White);
-    scoreText.setPosition(sf::Vector2f(10.f, 10.f)); // Используем sf::Vector2f
 }
 
 void Game::run() {
@@ -32,18 +35,14 @@ void Game::run() {
 }
 
 void Game::processEvents() {
-    sf::Event event; // sf::Event больше не имеет конструктора по умолчанию, объявляем без инициализации
-    while (window.pollEvent(event)) {
-        if (event.type == sf::Event::Closed) {
+    while (const std::optional<sf::Event> event = window.pollEvent()) {
+        if (event->is<sf::Event::Closed>()) {
             window.close();
-        }
-        
-        // sf::Keyboard::Space теперь sf::Keyboard::Key::Space
-        if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Key::Space) {
-            bullets.emplace_back(std::make_unique<Bullet>(
-                player.getBounds().left(), // Используем .left() вместо .left
-                player.getBounds().top()   // Используем .top() вместо .top
-            ));
+        } else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+            if (keyPressed->code == sf::Keyboard::Key::Space) {
+                sf::Vector2f position = player.getPosition();
+                bullets.push_back(std::make_unique<Bullet>(position.x, position.y));
+            }
         }
     }
     
@@ -53,41 +52,39 @@ void Game::processEvents() {
 void Game::update() {
     player.update();
     
-    // Spawn enemies
-    if (enemySpawnTimer >= Constants::ENEMY_SPAWN_INTERVAL && enemies.size() < Constants::MAX_ENEMIES) {
+    if (enemySpawnTimer >= Constants::ENEMY_SPAWN_INTERVAL && 
+        enemies.size() < Constants::MAX_ENEMIES) {
         spawnEnemy();
         enemySpawnTimer = 0;
     }
     enemySpawnTimer++;
     
-    // Update enemies
     for (auto& enemy : enemies) {
         enemy->update();
     }
     
-    // Remove out of screen enemies
-    enemies.erase(std::remove_if(enemies.begin(), enemies.end(), 
-        [](const std::unique_ptr<Enemy>& e) { return e->isOutOfScreen(); }), 
+    // Удаление врагов за пределами экрана
+    enemies.erase(std::remove_if(enemies.begin(), enemies.end(),
+        [](const auto& e) { return e->isOutOfScreen(); }), 
         enemies.end());
     
-    // Update bullets
     for (auto& bullet : bullets) {
         bullet->update();
     }
     
-    // Remove out of screen bullets
-    bullets.erase(std::remove_if(bullets.begin(), bullets.end(), 
-        [](const std::unique_ptr<Bullet>& b) { return !b->isActive; }), 
+    // Удаление неактивных пуль
+    bullets.erase(std::remove_if(bullets.begin(), bullets.end(),
+        [](const auto& b) { return !b->isActive; }), 
         bullets.end());
     
     checkCollisions();
-    
-    scoreText.setString("Score: " + std::to_string(score));
+    if (scoreText) {
+        scoreText->setString("Score: " + std::to_string(score));
+    }
 }
 
 void Game::render() {
     window.clear(sf::Color::Black);
-    
     player.draw(window);
     
     for (auto& enemy : enemies) {
@@ -98,21 +95,32 @@ void Game::render() {
         bullet->draw(window);
     }
     
-    window.draw(scoreText);
+    if (scoreText) {
+        window.draw(*scoreText);
+    }
     window.display();
 }
 
 void Game::spawnEnemy() {
-    float x = static_cast<float>(rand() % (Constants::WINDOW_WIDTH - Constants::ENEMY_SIZE));
-    enemies.emplace_back(std::make_unique<Enemy>(x, -static_cast<float>(Constants::ENEMY_SIZE))); // Приведение к float
+    float x = static_cast<float>(std::rand() % (Constants::WINDOW_WIDTH - Constants::ENEMY_SIZE));
+    enemies.push_back(std::make_unique<Enemy>(x, -static_cast<float>(Constants::ENEMY_SIZE)));
+
+    // enemies.push_back(std::make_unique<Enemy>(
+    // static_cast<float>(rand() % (Constants::WINDOW_WIDTH - Constants::ENEMY_SIZE)),
+    // -static_cast<float>(Constants::ENEMY_SIZE)
+    // ));
+}
+
+// Добавим вспомогательную функцию для проверки пересечения
+bool rectsIntersect(const sf::FloatRect& rect1, const sf::FloatRect& rect2) {
+    return rect1.findIntersection(rect2).has_value();
 }
 
 void Game::checkCollisions() {
-    // Bullet-Enemy collisions
+    // Проверка столкновений пуль с врагами
     for (auto& bullet : bullets) {
         for (auto& enemy : enemies) {
-            // intersects теперь принимает const sf::Rect<T>& 
-            if (bullet->getBounds().intersects(enemy->getBounds())) {
+            if (rectsIntersect(bullet->getBounds(), enemy->getBounds())) {
                 bullet->isActive = false;
                 enemy->isActive = false;
                 score += 10;
@@ -120,19 +128,19 @@ void Game::checkCollisions() {
         }
     }
     
-    // Remove inactive objects
-    enemies.erase(std::remove_if(enemies.begin(), enemies.end(), 
-        [](const std::unique_ptr<Enemy>& e) { return !e->isActive; }), 
+    // Удаление неактивных врагов
+    enemies.erase(std::remove_if(enemies.begin(), enemies.end(),
+        [](const auto& e) { return !e->isActive; }), 
         enemies.end());
     
-    bullets.erase(std::remove_if(bullets.begin(), bullets.end(), 
-        [](const std::unique_ptr<Bullet>& b) { return !b->isActive; }), 
+    // Удаление неактивных пуль
+    bullets.erase(std::remove_if(bullets.begin(), bullets.end(),
+        [](const auto& b) { return !b->isActive; }), 
         bullets.end());
     
-    // Player-Enemy collisions
+    // Проверка столкновений игрока с врагами
     for (auto& enemy : enemies) {
-        if (player.getBounds().intersects(enemy->getBounds())) {
-            // Game over logic can be added here
+        if (rectsIntersect(player.getBounds(), enemy->getBounds())) {
             std::cout << "Game Over! Final Score: " << score << std::endl;
             window.close();
         }

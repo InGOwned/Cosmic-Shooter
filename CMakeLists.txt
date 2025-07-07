@@ -48,18 +48,29 @@ find_package(flac REQUIRED)
 # ИЗМЕНЕНО: Удалены find_package для Ogg и Vorbis
 
 # Подключение библиотек
+# Для SFML библиотек
+set(SFML_LIBS graphics window system audio)
+
+foreach(lib ${SFML_LIBS})
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        debug "${SFML_ROOT}/lib/sfml-${lib}-s-d.lib"
+        optimized "${SFML_ROOT}/lib/sfml-${lib}-s.lib"
+    )
+endforeach()
+
+# Остальные зависимости
 target_link_libraries(${PROJECT_NAME} PRIVATE 
-    "${SFML_ROOT}/lib/sfml-graphics-s.lib" # Явно указываем путь к статической библиотеке SFML Graphics
-    "${SFML_ROOT}/lib/sfml-window-s.lib"  # Явно указываем путь к статической библиотеке SFML Window
-    "${SFML_ROOT}/lib/sfml-system-s.lib"  # Явно указываем путь к статической библиотеке SFML System
-    "${SFML_ROOT}/lib/sfml-audio-s.lib"   # Явно указываем путь к статической библиотеке SFML Audio
     OpenAL::OpenAL 
     Freetype::Freetype 
     ${flac_LIBRARIES}
-    "${SFML_ROOT}/lib/ogg.lib"           # Явно указываем путь к библиотеке Ogg
-    "${SFML_ROOT}/lib/vorbis.lib"        # Явно указываем путь к библиотеке Vorbis
-    "${SFML_ROOT}/lib/vorbisenc.lib"     # Явно указываем путь к библиотеке Vorbisenc
-    "${SFML_ROOT}/lib/vorbisfile.lib"    # Явно указываем путь к библиотеке Vorbisfile
+    debug "${SFML_ROOT}/lib/ogg.lib"           # Если есть debug-версии
+    debug "${SFML_ROOT}/lib/vorbis.lib"
+    debug "${SFML_ROOT}/lib/vorbisenc.lib"
+    debug "${SFML_ROOT}/lib/vorbisfile.lib"
+    optimized "${SFML_ROOT}/lib/ogg.lib"        # Release-версии
+    optimized "${SFML_ROOT}/lib/vorbis.lib"
+    optimized "${SFML_ROOT}/lib/vorbisenc.lib"
+    optimized "${SFML_ROOT}/lib/vorbisfile.lib"
 )
 
 # Дополнительные библиотеки для Windows
@@ -72,10 +83,10 @@ if(WIN32)
 endif()
 
 # Копирование DLL файлов (для Windows)
-if(WIN32)
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${SFML_ROOT}/bin"
-            $<TARGET_FILE_DIR:${PROJECT_NAME}>
-    )
-endif()
+# if(WIN32)
+#     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+#         COMMAND ${CMAKE_COMMAND} -E copy_directory
+#             "${SFML_ROOT}/bin"
+#             $<TARGET_FILE_DIR:${PROJECT_NAME}>
+#     )
+# endif()

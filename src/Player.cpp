@@ -48,3 +48,11 @@ void Player::handleInput() {
 sf::FloatRect Player::getBounds() const {
     return shape.getGlobalBounds();
 }
+
+sf::Vector2f Player::getPosition() const {
+    return shape.getPosition();
+}
+
+sf::Vector2f Player::getSize() const {
+    return shape.getSize();
+}
