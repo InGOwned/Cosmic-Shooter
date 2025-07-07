@@ -45,8 +45,6 @@ find_package(OpenAL CONFIG REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(flac REQUIRED)
 
-# ИЗМЕНЕНО: Удалены find_package для Ogg и Vorbis
-
 # Подключение библиотек
 # Для SFML библиотек
 set(SFML_LIBS graphics window system audio)

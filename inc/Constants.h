@@ -15,7 +15,7 @@ namespace Constants {
     static constexpr float ENEMY_SPEED = 2.0f;
     static constexpr float BULLET_SPEED = 7.0f;
 
-    static constexpr int PLAYER_SIZE = 50;
+    static constexpr int PLAYER_SIZE = 60;
     static constexpr int ENEMY_SIZE = 40;
     static constexpr int BULLET_SIZE = 10;
 

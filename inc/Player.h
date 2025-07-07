@@ -4,6 +4,7 @@
 #pragma once
 #include "GameObjects.h"
 #include "Constants.h"
+#include <SFML/Graphics.hpp>
 
 class Player : public GameObject {
 public:
@@ -16,8 +17,9 @@ public:
     sf::Vector2f getSize() const;
 
 private:
-    sf::RectangleShape shape;
-    sf::Vector2f velocity;
+    sf::Texture texture;
+    sf::Sprite sprite;
+    // sf::Vector2f velocity; // Удалено, так как уже есть в GameObject
 };
 
 #endif // PLAYER_H

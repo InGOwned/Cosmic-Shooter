@@ -16,7 +16,7 @@ Game::Game()
     window.setFramerateLimit(60);
     
     // Загрузка шрифта
-    if (!font.openFromFile("assets/fonts/arial.ttf")) {
+    if (!font.openFromFile("E:/Repositories/sfml_sample_3_0/assets/fonts/arial.cff")) {
         std::cerr << "Failed to load font" << std::endl;
     } else {
         scoreText = std::make_unique<sf::Text>(font);

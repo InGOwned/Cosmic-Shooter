@@ -4,9 +4,8 @@
 #include <SFML/Graphics.hpp>
 
 struct GameObject {
-    sf::RectangleShape shape;
     sf::Vector2f velocity;
-    bool isActive = true;
+    // bool isActive = true;
 };
 
 #endif // GAMEOBJECTS_H
