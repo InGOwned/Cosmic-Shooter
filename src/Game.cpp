@@ -21,7 +21,7 @@ Game::Game()
     window.setFramerateLimit(60);
     
     // Загрузка шрифта
-    if (!font.openFromFile("E:/Repositories/sfml_sample_3_0/assets/fonts/arialmt.ttf")) {
+    if (!font.openFromFile("../../../sfml_sample_3_0/assets/fonts/arialmt.ttf")) {
         std::cerr << "Failed to load font" << std::endl;
     } else {
         scoreText = std::make_unique<sf::Text>(font);
@@ -31,7 +31,7 @@ Game::Game()
     }
 
     // Загрузка текстуры фона
-    if (!backgroundTexture.loadFromFile("E:/Repositories/sfml_sample_3_0/assets/images/background2.jpg")) {
+    if (!backgroundTexture.loadFromFile("../../../sfml_sample_3_0/assets/images/background2.jpg")) {
         std::cerr << "Failed to load background texture" << std::endl;
     }
     backgroundSprite.setTexture(backgroundTexture, true);
@@ -41,12 +41,12 @@ Game::Game()
         static_cast<float>(Constants::WINDOW_HEIGHT) / backgroundTexture.getSize().y
     ));
 
-    if (!shootBuffer.loadFromFile("E:/Repositories/sfml_sample_3_0/assets/audio/shoot.wav")) {
+    if (!shootBuffer.loadFromFile("../../../sfml_sample_3_0/assets/audio/shoot.wav")) {
         std::cerr << "Failed to load shoot sound" << std::endl;
     }
     shootSound.setBuffer(shootBuffer);
 
-    if (!deathBuffer.loadFromFile("E:/Repositories/sfml_sample_3_0/assets/audio/death.wav")) {
+    if (!deathBuffer.loadFromFile("../../../sfml_sample_3_0/assets/audio/death.wav")) {
         std::cerr << "Failed to load death sound" << std::endl;
     }
     deathSound.setBuffer(deathBuffer);
