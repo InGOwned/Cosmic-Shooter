@@ -1,23 +1,22 @@
 cmake_minimum_required(VERSION 3.15)
-
-# Указываем путь к вашим локальным библиотекам SFML, Ogg, Vorbis
-set(SFML_ROOT "${CMAKE_SOURCE_DIR}/ext/SFML")
-
-# Добавляем путь Vcpkg. Он будет использоваться для других библиотек
-list(APPEND CMAKE_PREFIX_PATH "$ENV{VCPKG_ROOT}/installed/x64-windows")
-
-set(PROJECT_NAME arkanoid_game)
-project("${PROJECT_NAME}" LANGUAGES CXX)
+project(arkanoid_game LANGUAGES CXX)
 
 # Настройки компилятора
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Настройка для Windows
-if(WIN32)
-    add_definitions(-DSFML_STATIC)
-endif()
+# Для статической линковки SFML
+add_definitions(-DSFML_STATIC)
+
+set(SFML_ROOT "${CMAKE_SOURCE_DIR}/ext/SFML-3.0.0")
+set(SFML_DIR "${SFML_ROOT}/lib/cmake/SFML")
+
+# Путь к зависимостям SFML (FreeType, FLAC, Vorbis)
+set(SFML_DEPS_ROOT "${SFML_ROOT}/lib")
+
+# Поиск SFML
+find_package(SFML 3.0 COMPONENTS Audio Graphics Window System REQUIRED)
 
 # Настройка структуры проекта
 set(SOURCE_DIR src)
@@ -26,6 +25,7 @@ set(INCLUDE_DIR inc)
 # Список исходных файлов
 file(GLOB SOURCES 
     "${SOURCE_DIR}/*.cpp"
+    "${SOURCE_DIR}/*.h"
 )
 
 # Создание исполняемого файла
@@ -36,55 +36,70 @@ add_executable(${PROJECT_NAME}
 
 # Подключение заголовочных файлов
 target_include_directories(${PROJECT_NAME} PRIVATE
-    ${CMAKE_SOURCE_DIR}/${INCLUDE_DIR}
-    "${SFML_ROOT}/include" # Явно указываем путь к include SFML
+    ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}
+    "${SFML_ROOT}/include"
 )
 
-# Поиск зависимостей (эти библиотеки, вероятно, из Vcpkg)
-find_package(OpenAL CONFIG REQUIRED)
-find_package(Freetype REQUIRED)
-find_package(flac REQUIRED)
+# Указание путей поиска библиотек
+target_link_directories(${PROJECT_NAME} PRIVATE
+    "${SFML_ROOT}/lib"
+    "${SFML_DEPS_ROOT}"
+)
 
-# Подключение библиотек
-# Для SFML библиотек
-set(SFML_LIBS graphics window system audio)
+# --- ИСПРАВЛЕННАЯ СЕКЦИЯ ЛИНКОВКИ ---
+# Используем генераторные выражения для автоматического выбора Debug/Release библиотек
 
-foreach(lib ${SFML_LIBS})
+# Основные библиотеки SFML
+set(SFML_LIBS
+    sfml-audio
+    sfml-graphics
+    sfml-window
+    sfml-system
+)
+
+foreach(LIB ${SFML_LIBS})
     target_link_libraries(${PROJECT_NAME} PRIVATE
-        debug "${SFML_ROOT}/lib/sfml-${lib}-s-d.lib"
-        optimized "${SFML_ROOT}/lib/sfml-${lib}-s.lib"
+        debug "${SFML_ROOT}/lib/${LIB}-s-d.lib"
+        optimized "${SFML_ROOT}/lib/${LIB}-s.lib"
     )
 endforeach()
 
-# Остальные зависимости
-target_link_libraries(${PROJECT_NAME} PRIVATE 
-    OpenAL::OpenAL 
-    Freetype::Freetype 
-    ${flac_LIBRARIES}
-    debug "${SFML_ROOT}/lib/ogg.lib"           # Если есть debug-версии
-    debug "${SFML_ROOT}/lib/vorbis.lib"
-    debug "${SFML_ROOT}/lib/vorbisenc.lib"
-    debug "${SFML_ROOT}/lib/vorbisfile.lib"
-    optimized "${SFML_ROOT}/lib/ogg.lib"        # Release-версии
-    optimized "${SFML_ROOT}/lib/vorbis.lib"
-    optimized "${SFML_ROOT}/lib/vorbisenc.lib"
-    optimized "${SFML_ROOT}/lib/vorbisfile.lib"
+# Зависимости SFML (все находятся в SFML_ROOT/lib)
+set(SFML_DEPS
+    freetype
+    flac
+    vorbisenc
+    vorbisfile
+    vorbis
+    ogg
 )
 
-# Дополнительные библиотеки для Windows
-if(WIN32)
+foreach(DEP ${SFML_DEPS})
     target_link_libraries(${PROJECT_NAME} PRIVATE
-        opengl32
-        winmm
-        gdi32
+        debug "${SFML_ROOT}/lib/${DEP}d.lib"
+        optimized "${SFML_ROOT}/lib/${DEP}.lib"
+    )
+endforeach()
+
+# Системные зависимости
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    opengl32
+    winmm
+    gdi32
+    user32
+    advapi32
+    ws2_32
+)
+
+# Добавляем sfml-main (отдельно, так как у него другое именование)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    debug "${SFML_ROOT}/lib/sfml-main-s-d.lib"
+    optimized "${SFML_ROOT}/lib/sfml-main.lib"
+)
+
+# Настройка для Visual Studio
+if(MSVC)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
     )
 endif()
-
-# Копирование DLL файлов (для Windows)
-# if(WIN32)
-#     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-#         COMMAND ${CMAKE_COMMAND} -E copy_directory
-#             "${SFML_ROOT}/bin"
-#             $<TARGET_FILE_DIR:${PROJECT_NAME}>
-#     )
-# endif()

@@ -13,7 +13,9 @@ Game::Game()
              std::string(Constants::WINDOW_TITLE)),
       player(),
       backgroundTexture(),
-      backgroundSprite(backgroundTexture) // Инициализируем спрайт с текстурой
+      backgroundSprite(backgroundTexture),
+      shootSound(shootBuffer),
+      deathSound(deathBuffer)
       
 {
     window.setFramerateLimit(60);
@@ -38,32 +40,86 @@ Game::Game()
         static_cast<float>(Constants::WINDOW_WIDTH) / backgroundTexture.getSize().x,
         static_cast<float>(Constants::WINDOW_HEIGHT) / backgroundTexture.getSize().y
     ));
+
+    if (!shootBuffer.loadFromFile("E:/Repositories/sfml_sample_3_0/assets/audio/shoot.wav")) {
+        std::cerr << "Failed to load shoot sound" << std::endl;
+    }
+    shootSound.setBuffer(shootBuffer);
+
+    if (!deathBuffer.loadFromFile("E:/Repositories/sfml_sample_3_0/assets/audio/death.wav")) {
+        std::cerr << "Failed to load death sound" << std::endl;
+    }
+    deathSound.setBuffer(deathBuffer);
+
+    // Инициализация текста Game Over
+    gameOverText = std::make_unique<sf::Text>(font);
+    gameOverText->setString("GAME OVER\nPress SPACE to restart");
+    gameOverText->setCharacterSize(40);
+    gameOverText->setFillColor(sf::Color::Red);
+    gameOverText->setPosition(sf::Vector2f(
+        Constants::WINDOW_WIDTH / 2 - gameOverText->getLocalBounds().size.x / 2,
+        Constants::WINDOW_HEIGHT / 2 - gameOverText->getLocalBounds().size.y / 2
+    ));
 }
 
 void Game::run() {
     while (window.isOpen()) {
         processEvents();
-        update();
+        
+        if (!gameOver) {
+            update();
+        }
+        
         render();
     }
 }
 
+void Game::resetGame() {
+    gameOver = false;
+    score = 0;
+    enemySpawnTimer = 0;
+    enemies.clear();
+    bullets.clear();
+    
+    // Сброс позиции игрока
+    player.resetPosition();
+}
+
 void Game::processEvents() {
-    while (const std::optional<sf::Event> event = window.pollEvent()) {
+    // Создаем событие с помощью placement new
+    alignas(sf::Event) unsigned char eventBuffer[sizeof(sf::Event)];
+    sf::Event& event = *reinterpret_cast<sf::Event*>(eventBuffer);
+    
+    while (auto event = window.pollEvent()) {
+        // Обработка закрытия окна
         if (event->is<sf::Event::Closed>()) {
             window.close();
-        } else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+        }
+        
+        // Обработка нажатия клавиши Space
+        if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
             if (keyPressed->code == sf::Keyboard::Key::Space) {
-                sf::Vector2f position = player.getPosition();
-                bullets.push_back(std::make_unique<Bullet>(position.x, position.y));
+                if (!gameOver) {
+                    // Выстрел
+                    sf::Vector2f position = player.getPosition();
+                    bullets.push_back(std::make_unique<Bullet>(position.x, position.y));
+                    shootSound.play();
+                } else {
+                    // Рестарт игры
+                    resetGame();
+                }
             }
         }
     }
     
-    player.handleInput();
+    if (!gameOver) {
+        player.handleInput();
+    }
 }
 
 void Game::update() {
+    if (gameOver) return;
+
     player.update();
     
     if (enemySpawnTimer >= Constants::ENEMY_SPAWN_INTERVAL && 
@@ -99,20 +155,25 @@ void Game::update() {
 
 void Game::render() {
     window.clear(sf::Color::Black);
-    window.draw(backgroundSprite); // Отрисовка фона
-    player.draw(window);
+    window.draw(backgroundSprite);
     
-    for (auto& enemy : enemies) {
-        enemy->draw(window);
+    if (!gameOver) {
+        player.draw(window);
+        for (auto& enemy : enemies) {
+            enemy->draw(window);
+        }
+        for (auto& bullet : bullets) {
+            bullet->draw(window);
+        }
+        if (scoreText) {
+            window.draw(*scoreText);
+        }
+    } else {
+        if (gameOverText) {
+            window.draw(*gameOverText);
+        }
     }
     
-    for (auto& bullet : bullets) {
-        bullet->draw(window);
-    }
-    
-    if (scoreText) {
-        window.draw(*scoreText);
-    }
     window.display();
 }
 
@@ -150,9 +211,9 @@ void Game::checkCollisions() {
     // Проверка столкновений игрока с врагами
     for (auto& enemy : enemies) {
         if (rectsIntersect(player.getBounds(), enemy->getBounds())) {
-            std::cout << "Game Over! Final Score: " << score << std::endl;
-            window.close();
+            deathSound.play();
+            gameOver = true;
+            return; // Выходим сразу после обнаружения столкновения
         }
     }
 }
-

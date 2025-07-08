@@ -12,6 +12,8 @@ public:
     void update();
     void draw(sf::RenderWindow& window);
     void handleInput();
+    void resetPosition();
+
     sf::FloatRect getBounds() const;
     sf::Vector2f getPosition() const; // Новый метод
     sf::Vector2f getSize() const;

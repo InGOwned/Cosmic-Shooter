@@ -5,7 +5,7 @@ Enemy::Enemy(float x, float y)
     : texture(),  // Инициализируем текстуру
       sprite(texture)  // Инициализируем спрайт с текстурой
     {
-    if (!texture.loadFromFile("E:/Repositories/sfml_sample_3_0/assets/images/enemy.png")) {
+    if (!texture.loadFromFile("../../../sfml_sample_3_0/assets/images/enemy.png")) {
         std::cerr << "Failed to load enemy texture" << std::endl;
     }
     sprite.setTexture(texture, true);

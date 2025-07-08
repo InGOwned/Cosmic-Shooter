@@ -54,6 +54,15 @@ void Player::draw(sf::RenderWindow& window) {
     window.draw(sprite);
 }
 
+void Player::resetPosition() {
+    // Установка начальной позиции
+    sf::Vector2f globalSize = sprite.getGlobalBounds().size;
+    sprite.setPosition(sf::Vector2f(
+        Constants::WINDOW_WIDTH / 2 - globalSize.x / 2,
+        Constants::WINDOW_HEIGHT - globalSize.y - 10
+    ));
+}
+
 void Player::handleInput() {
     velocity.x = 0;
     velocity.y = 0;
