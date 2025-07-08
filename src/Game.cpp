@@ -15,7 +15,8 @@ Game::Game()
       backgroundTexture(),
       backgroundSprite(backgroundTexture),
       shootSound(shootBuffer),
-      deathSound(deathBuffer)
+      deathSound(deathBuffer),
+      hitSound(hitBuffer)
       
 {
     window.setFramerateLimit(60);
@@ -51,15 +52,25 @@ Game::Game()
     }
     deathSound.setBuffer(deathBuffer);
 
+    if (!hitBuffer.loadFromFile("../../../sfml_sample_3_0/assets/audio/hit.wav")) {
+        std::cerr << "Failed to load hit sound" << std::endl;
+    }
+    hitSound.setBuffer(hitBuffer);
+
     // Инициализация текста Game Over
+    // gameOverText = std::make_unique<sf::Text>(font);
+    // gameOverText->setString("GAME OVER\nPress SPACE to restart");
+    // gameOverText->setCharacterSize(40);
+    // gameOverText->setFillColor(sf::Color::Red);
+    // gameOverText->setPosition(sf::Vector2f(
+    //     Constants::WINDOW_WIDTH / 2 - gameOverText->getLocalBounds().size.x / 2,
+    //     Constants::WINDOW_HEIGHT / 2 - gameOverText->getLocalBounds().size.y / 2
+    // ));
+
     gameOverText = std::make_unique<sf::Text>(font);
-    gameOverText->setString("GAME OVER\nPress SPACE to restart");
     gameOverText->setCharacterSize(40);
     gameOverText->setFillColor(sf::Color::Red);
-    gameOverText->setPosition(sf::Vector2f(
-        Constants::WINDOW_WIDTH / 2 - gameOverText->getLocalBounds().size.x / 2,
-        Constants::WINDOW_HEIGHT / 2 - gameOverText->getLocalBounds().size.y / 2
-    ));
+    updateGameOverText(); // Используем метод для установки текста
 }
 
 void Game::run() {
@@ -80,9 +91,21 @@ void Game::resetGame() {
     enemySpawnTimer = 0;
     enemies.clear();
     bullets.clear();
-    
-    // Сброс позиции игрока
     player.resetPosition();
+    
+    updateGameOverText(); // Обновляем текст (счет будет 0)
+}
+
+void Game::updateGameOverText() {
+    if (!gameOverText) return;
+    
+    // Формируем строку с текущим счетом
+    gameOverText->setString("GAME OVER\nScore: " + std::to_string(score) + "\nPress SPACE to restart");
+    
+    // Центрируем текст
+    sf::FloatRect textRect = gameOverText->getLocalBounds();
+    gameOverText->setOrigin(sf::Vector2f(textRect.size.x / 2, textRect.size.y / 2));
+    gameOverText->setPosition(sf::Vector2f(Constants::WINDOW_WIDTH / 2.0f, Constants::WINDOW_HEIGHT / 2.0f));
 }
 
 void Game::processEvents() {
@@ -194,6 +217,7 @@ void Game::checkCollisions() {
                 bullet->isActive = false;
                 enemy->isActive = false;
                 score += 10;
+                hitSound.play();
             }
         }
     }
@@ -213,7 +237,8 @@ void Game::checkCollisions() {
         if (rectsIntersect(player.getBounds(), enemy->getBounds())) {
             deathSound.play();
             gameOver = true;
-            return; // Выходим сразу после обнаружения столкновения
+            updateGameOverText(); // Обновляем текст с текущим счетом
+            return;
         }
     }
 }

@@ -27,6 +27,7 @@ private:
     void spawnEnemy();
     void checkCollisions();
     void resetGame();
+    void updateGameOverText();
 
     State gameState = State::Playing;
 
@@ -46,6 +47,8 @@ private:
     sf::Sound shootSound;
     sf::SoundBuffer deathBuffer;
     sf::Sound deathSound;
+    sf::SoundBuffer hitBuffer;
+    sf::Sound hitSound;
 
     std::unique_ptr<sf::Text> gameOverText;
     bool gameOver = false;

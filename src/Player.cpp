@@ -67,6 +67,19 @@ void Player::handleInput() {
     velocity.x = 0;
     velocity.y = 0;
     
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
+        velocity.x = -Constants::PLAYER_SPEED;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
+        velocity.x = Constants::PLAYER_SPEED;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
+        velocity.y = -Constants::PLAYER_SPEED;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
+        velocity.y = Constants::PLAYER_SPEED;
+    }
+
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left)) {
         velocity.x = -Constants::PLAYER_SPEED;
     }
