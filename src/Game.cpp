@@ -100,7 +100,7 @@ void Game::updateGameOverText() {
     if (!gameOverText) return;
     
     // Формируем строку с текущим счетом
-    gameOverText->setString("GAME OVER\nScore: " + std::to_string(score) + "\nPress SPACE to restart");
+    gameOverText->setString("GAME OVER\n\nScore: " + std::to_string(score) + "\nPress SPACE to restart");
     
     // Центрируем текст
     sf::FloatRect textRect = gameOverText->getLocalBounds();

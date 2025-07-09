@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(arkanoid_game LANGUAGES CXX)
+project(cosmic_shooter_game LANGUAGES CXX)
 
 # Настройки компилятора
 set(CMAKE_CXX_STANDARD 17)
@@ -38,16 +38,9 @@ add_executable(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}
     "${SFML_ROOT}/include"
-)
-
-# Указание путей поиска библиотек
-target_link_directories(${PROJECT_NAME} PRIVATE
     "${SFML_ROOT}/lib"
     "${SFML_DEPS_ROOT}"
 )
-
-# --- ИСПРАВЛЕННАЯ СЕКЦИЯ ЛИНКОВКИ ---
-# Используем генераторные выражения для автоматического выбора Debug/Release библиотек
 
 # Основные библиотеки SFML
 set(SFML_LIBS

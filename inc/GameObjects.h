@@ -5,7 +5,6 @@
 
 struct GameObject {
     sf::Vector2f velocity;
-    // bool isActive = true;
 };
 
 #endif // GAMEOBJECTS_H
