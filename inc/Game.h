@@ -15,7 +15,7 @@ class Enemy;
 
 class Game {
 public:
-    enum class State { Playing, GameOver, MainMenu }; // Состояния игры
+    enum class State { Playing, GameOver, MainMenu, Paused }; // Состояния игры
     
     Game();
     void run();
@@ -29,6 +29,7 @@ private:
     void resetGame();
     void updateGameOverText();
     void initMenu();
+    void initPauseMenu();
 
     State gameState = State::Playing;
 
@@ -53,10 +54,16 @@ private:
     sf::SoundBuffer hitBuffer;
     sf::Sound hitSound;
 
-    // Элементы меню
+    // Главное меню
     std::unique_ptr<sf::Text> titleText;
     std::unique_ptr<sf::Text> playButton;
     std::unique_ptr<sf::Text> exitButton;
+
+    // Меню паузы
+    std::unique_ptr<sf::Text> pauseTitleText;
+    std::unique_ptr<sf::Text> continueButton;
+    std::unique_ptr<sf::Text> restartButton;
+    std::unique_ptr<sf::Text> exitPauseButton;
 
     std::unique_ptr<sf::Text> gameOverText;
     bool gameOver = false;

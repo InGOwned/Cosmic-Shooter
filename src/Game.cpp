@@ -26,7 +26,7 @@ Game::Game()
         std::cerr << "Failed to load font" << std::endl;
     } else {
         scoreText = std::make_unique<sf::Text>(font);
-        scoreText->setCharacterSize(24);
+        scoreText->setCharacterSize(30);
         scoreText->setFillColor(sf::Color::White);
         scoreText->setPosition(sf::Vector2f(10.f, 10.f));
     }
@@ -61,8 +61,9 @@ Game::Game()
     gameOverText->setFillColor(sf::Color::Red);
     updateGameOverText();
     
-    // Инициализация меню
+    // Инициализация главного меню и паузы 
     initMenu();
+    initPauseMenu();
 }
 
 void Game::initMenu() {
@@ -95,6 +96,41 @@ void Game::initMenu() {
     exitButton->setPosition(sf::Vector2f(Constants::WINDOW_WIDTH/2, 350));
 }
 
+void Game::initPauseMenu() {
+    pauseTitleText = std::make_unique<sf::Text>(font);
+    pauseTitleText->setString("Game Paused");
+    pauseTitleText->setCharacterSize(50);
+    pauseTitleText->setFillColor(sf::Color::Yellow);
+    pauseTitleText->setStyle(sf::Text::Bold);
+    sf::FloatRect pauseTitleBounds = pauseTitleText->getLocalBounds();
+    pauseTitleText->setOrigin(sf::Vector2f(pauseTitleBounds.size.x/2, pauseTitleBounds.size.y/2));
+    pauseTitleText->setPosition(sf::Vector2f(Constants::WINDOW_WIDTH/2, 150));
+
+    continueButton = std::make_unique<sf::Text>(font);
+    continueButton->setString("Continue");
+    continueButton->setCharacterSize(40);
+    continueButton->setFillColor(sf::Color::White);
+    sf::FloatRect continueBounds = continueButton->getLocalBounds();
+    continueButton->setOrigin(sf::Vector2f(continueBounds.size.x/2, continueBounds.size.y/2));
+    continueButton->setPosition(sf::Vector2f(Constants::WINDOW_WIDTH/2, 250));
+
+    restartButton = std::make_unique<sf::Text>(font);
+    restartButton->setString("Restart Game");
+    restartButton->setCharacterSize(40);
+    restartButton->setFillColor(sf::Color::White);
+    sf::FloatRect restartBounds = restartButton->getLocalBounds();
+    restartButton->setOrigin(sf::Vector2f(restartBounds.size.x/2, restartBounds.size.y/2));
+    restartButton->setPosition(sf::Vector2f(Constants::WINDOW_WIDTH/2, 350));
+
+    exitPauseButton = std::make_unique<sf::Text>(font);
+    exitPauseButton->setString("Exit to Menu");
+    exitPauseButton->setCharacterSize(40);
+    exitPauseButton->setFillColor(sf::Color::White);
+    sf::FloatRect exitBounds = exitPauseButton->getLocalBounds();
+    exitPauseButton->setOrigin(sf::Vector2f(exitBounds.size.x/2, exitBounds.size.y/2));
+    exitPauseButton->setPosition(sf::Vector2f(Constants::WINDOW_WIDTH/2, 450));
+}
+
 void Game::run() {
     while (window.isOpen()) {
         processEvents();
@@ -108,7 +144,6 @@ void Game::run() {
 }
 
 void Game::resetGame() {
-    gameState = State::Playing;
     score = 0;
     enemySpawnTimer = 0;
     enemies.clear();
@@ -136,35 +171,56 @@ void Game::processEvents() {
         
         // Обработка событий в главном меню
         if (gameState == State::MainMenu) {
-        if (const auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()) {
-            sf::Vector2f mousePos(static_cast<float>(mouseMoved->position.x), static_cast<float>(mouseMoved->position.y));
-            // Используем ->
-            playButton->setFillColor(playButton->getGlobalBounds().contains(mousePos) ? sf::Color::Green : sf::Color::White);
-            exitButton->setFillColor(exitButton->getGlobalBounds().contains(mousePos) ? sf::Color::Red : sf::Color::White);
-        }
-        
-        if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonPressed>()) {
-            if (mouseButton->button == sf::Mouse::Button::Left) {
-                sf::Vector2f mousePos(static_cast<float>(mouseButton->position.x), static_cast<float>(mouseButton->position.y));
-                // Используем ->
-                if (playButton->getGlobalBounds().contains(mousePos)) {
-                    resetGame();
-                } else if (exitButton->getGlobalBounds().contains(mousePos)) {
-                    window.close();
+            if (const auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()) {
+                sf::Vector2f mousePos(static_cast<float>(mouseMoved->position.x), static_cast<float>(mouseMoved->position.y));
+                playButton->setFillColor(playButton->getGlobalBounds().contains(mousePos) ? sf::Color::Green : sf::Color::White);
+                exitButton->setFillColor(exitButton->getGlobalBounds().contains(mousePos) ? sf::Color::Red : sf::Color::White);
+            }
+            
+            if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonPressed>()) {
+                if (mouseButton->button == sf::Mouse::Button::Left) {
+                    sf::Vector2f mousePos(static_cast<float>(mouseButton->position.x), static_cast<float>(mouseButton->position.y));
+                    if (playButton->getGlobalBounds().contains(mousePos)) {
+                        resetGame();
+                        gameState = State::Playing;
+                    } else if (exitButton->getGlobalBounds().contains(mousePos)) {
+                        window.close();
+                    }
                 }
             }
         }
-    }
-        
-        // Обработка клавиши Space
-        if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-            if (keyPressed->code == sf::Keyboard::Key::Space) {
-                if (gameState == State::Playing) {
-                    sf::Vector2f position = player.getPosition();
-                    bullets.push_back(std::make_unique<Bullet>(position.x, position.y));
-                    shootSound.play();
-                } else if (gameState == State::GameOver) {
+        // Обработка событий в меню паузы
+        else if (gameState == State::Paused) {
+            if (const auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()) {
+                sf::Vector2f mousePos(static_cast<float>(mouseMoved->position.x), static_cast<float>(mouseMoved->position.y));
+                continueButton->setFillColor(continueButton->getGlobalBounds().contains(mousePos) ? sf::Color::Green : sf::Color::White);
+                restartButton->setFillColor(restartButton->getGlobalBounds().contains(mousePos) ? sf::Color::Yellow : sf::Color::White);
+                exitPauseButton->setFillColor(exitPauseButton->getGlobalBounds().contains(mousePos) ? sf::Color::Red : sf::Color::White);
+        }
+            
+            
+            if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonPressed>()) {
+                if (mouseButton->button == sf::Mouse::Button::Left) {
+                    sf::Vector2f mousePos(static_cast<float>(mouseButton->position.x), static_cast<float>(mouseButton->position.y));
+                    if (continueButton->getGlobalBounds().contains(mousePos)) {
+                        gameState = State::Playing;
+                    } else if (restartButton->getGlobalBounds().contains(mousePos)) {
+                        resetGame();
+                        gameState = State::Playing;
+                    }
+                    if (exitPauseButton->getGlobalBounds().contains(mousePos)) {
+                        gameState = State::MainMenu;
+                    }
+                }
+            }
+        }
+        // Обработка событий в Game Over
+        else if (gameState == State::GameOver) {
+            // Обработка нажатия Space для рестарта
+            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                if (keyPressed->code == sf::Keyboard::Key::Space) {
                     resetGame();
+                    gameState = State::Playing;
                 }
             }
         }
@@ -172,10 +228,28 @@ void Game::processEvents() {
         // Обработка клавиши Escape
         if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
             if (keyPressed->code == sf::Keyboard::Key::Escape) {
-                if (gameState == State::Playing || gameState == State::GameOver) {
+                if (gameState == State::Playing) {
+                    gameState = State::Paused;
+                }
+                else if (gameState == State::Paused) {
+                    gameState = State::Playing;
+                }
+                else if (gameState == State::GameOver) {
                     gameState = State::MainMenu;
                 }
             }
+        }
+        
+        // Обработка выстрела (Space) только в состоянии Playing
+        if (gameState == State::Playing) {
+            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                if (keyPressed->code == sf::Keyboard::Key::Space) {
+                    sf::Vector2f position = player.getPosition();
+                    bullets.push_back(std::make_unique<Bullet>(position.x, position.y));
+                    shootSound.play();
+                }
+            }
+        
         }
     }
     
@@ -224,7 +298,7 @@ void Game::render() {
     window.clear(sf::Color::Black);
     window.draw(backgroundSprite);
     
-     switch (gameState) {
+    switch (gameState) {
         case State::MainMenu:
             window.draw(*titleText);
             window.draw(*playButton);
@@ -244,6 +318,31 @@ void Game::render() {
             }
             break;
             
+        case State::Paused: {
+            // Отрисовываем игровой мир
+            player.draw(window);
+            for (auto& enemy : enemies) {
+                enemy->draw(window);
+            }
+            for (auto& bullet : bullets) {
+                bullet->draw(window);
+            }
+            if (scoreText) {
+                window.draw(*scoreText);
+            }
+            
+            // Затемнение
+            sf::RectangleShape overlay(sf::Vector2f(Constants::WINDOW_WIDTH, Constants::WINDOW_HEIGHT));
+            overlay.setFillColor(sf::Color(0, 0, 0, 150)); // полупрозрачный черный
+            window.draw(overlay);
+            
+            // Отрисовываем меню паузы
+            window.draw(*pauseTitleText);
+            window.draw(*continueButton);
+            window.draw(*restartButton);
+            window.draw(*exitPauseButton);
+            break;
+        }
         case State::GameOver:
             player.draw(window);
             for (auto& enemy : enemies) {
