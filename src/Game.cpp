@@ -22,7 +22,7 @@ Game::Game()
     window.setFramerateLimit(60);
     
     // Загрузка шрифта
-    if (!font.openFromFile("../../../sfml_sample_3_0/assets/fonts/arialmt.ttf")) {
+    if (!font.openFromFile("../../../Cosmic Shooter/assets/fonts/arialmt.ttf")) {
         std::cerr << "Failed to load font" << std::endl;
     } else {
         scoreText = std::make_unique<sf::Text>(font);
@@ -32,7 +32,7 @@ Game::Game()
     }
 
     // Загрузка текстуры фона
-    if (!backgroundTexture.loadFromFile("../../../sfml_sample_3_0/assets/images/background2.jpg")) {
+    if (!backgroundTexture.loadFromFile("../../../Cosmic Shooter/assets/images/background2.jpg")) {
         std::cerr << "Failed to load background texture" << std::endl;
     }
     backgroundSprite.setTexture(backgroundTexture, true);
@@ -41,17 +41,17 @@ Game::Game()
         static_cast<float>(Constants::WINDOW_HEIGHT) / backgroundTexture.getSize().y
     ));
 
-    if (!shootBuffer.loadFromFile("../../../sfml_sample_3_0/assets/audio/shoot.wav")) {
+    if (!shootBuffer.loadFromFile("../../../Cosmic Shooter/assets/audio/shoot.wav")) {
         std::cerr << "Failed to load shoot sound" << std::endl;
     }
     shootSound.setBuffer(shootBuffer);
 
-    if (!deathBuffer.loadFromFile("../../../sfml_sample_3_0/assets/audio/death.wav")) {
+    if (!deathBuffer.loadFromFile("../../../Cosmic Shooter/assets/audio/death.wav")) {
         std::cerr << "Failed to load death sound" << std::endl;
     }
     deathSound.setBuffer(deathBuffer);
 
-    if (!hitBuffer.loadFromFile("../../../sfml_sample_3_0/assets/audio/hit.wav")) {
+    if (!hitBuffer.loadFromFile("../../../Cosmic Shooter/assets/audio/hit.wav")) {
         std::cerr << "Failed to load hit sound" << std::endl;
     }
     hitSound.setBuffer(hitBuffer);
