@@ -14,7 +14,7 @@ public:
     sf::FloatRect getBounds() const;
     bool isOutOfScreen() const;
 
-    bool isActive = true;  // Добавлен публичный член
+    bool isActive = true; 
 
 private:
     sf::RectangleShape shape;

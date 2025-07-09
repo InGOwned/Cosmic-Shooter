@@ -5,8 +5,8 @@
 
 namespace Constants {
     // Используем constexpr для compile-time констант
-    static constexpr int WINDOW_WIDTH = 800;
-    static constexpr int WINDOW_HEIGHT = 600;
+    static constexpr int WINDOW_WIDTH = 1200;
+    static constexpr int WINDOW_HEIGHT = 800;
     
     // Для строк используем constexpr с std::string_view (C++17)
     static constexpr std::string_view WINDOW_TITLE = "Cosmic Shooter";
