@@ -64,6 +64,7 @@ Game::Game()
     // Инициализация главного меню и паузы 
     initMenu();
     initPauseMenu();
+    initGameOverMenu();
 }
 
 void Game::initMenu() {
@@ -129,6 +130,71 @@ void Game::initPauseMenu() {
     sf::FloatRect exitBounds = exitPauseButton->getLocalBounds();
     exitPauseButton->setOrigin(sf::Vector2f(exitBounds.size.x/2, exitBounds.size.y/2));
     exitPauseButton->setPosition(sf::Vector2f(Constants::WINDOW_WIDTH/2, 450));
+}
+
+void Game::initGameOverMenu() {
+    // Заголовок
+    gameOverTitle = std::make_unique<sf::Text>(font);
+    gameOverTitle->setString("GAME OVER");
+    gameOverTitle->setCharacterSize(70);
+    gameOverTitle->setFillColor(sf::Color(255, 50, 50));
+    gameOverTitle->setStyle(sf::Text::Bold);
+    sf::FloatRect titleBounds = gameOverTitle->getLocalBounds();
+    gameOverTitle->setOrigin(sf::Vector2f(titleBounds.size.x/2, titleBounds.size.y/2));
+    gameOverTitle->setPosition(sf::Vector2f(Constants::WINDOW_WIDTH/2, 150));
+    
+    // Панель
+    gameOverPanel = std::make_unique<sf::RectangleShape>(
+        sf::Vector2f(500, 300)
+    );
+    gameOverPanel->setFillColor(sf::Color(30, 30, 50, 230));
+    gameOverPanel->setOutlineThickness(3);
+    gameOverPanel->setOutlineColor(sf::Color(70, 130, 180));
+    gameOverPanel->setOrigin(sf::Vector2f(250, 150));
+    gameOverPanel->setPosition(sf::Vector2f(Constants::WINDOW_WIDTH/2, Constants::WINDOW_HEIGHT/2));
+    gameOverPanel->setOutlineThickness(1);
+    
+    // Текст счета
+    gameOverScore = std::make_unique<sf::Text>(font);
+    gameOverScore->setCharacterSize(40);
+    gameOverScore->setFillColor(sf::Color(220, 220, 255));
+    
+    // Кнопка рестарта
+    restartButtonGameOver = std::make_unique<sf::Text>(font);
+    restartButtonGameOver->setString("RESTART GAME");
+    restartButtonGameOver->setCharacterSize(35);
+    restartButtonGameOver->setFillColor(sf::Color(50, 200, 50));
+    sf::FloatRect restartBounds = restartButtonGameOver->getLocalBounds();
+    restartButtonGameOver->setOrigin(sf::Vector2f(restartBounds.size.x/2, restartBounds.size.y/2));
+    restartButtonGameOver->setPosition(sf::Vector2f(Constants::WINDOW_WIDTH/2, Constants::WINDOW_HEIGHT/2 + 20));
+    
+    // Кнопка меню
+    menuButtonGameOver = std::make_unique<sf::Text>(font);
+    menuButtonGameOver->setString("MAIN MENU");
+    menuButtonGameOver->setCharacterSize(35);
+    menuButtonGameOver->setFillColor(sf::Color(70, 130, 180));
+    sf::FloatRect menuBounds = menuButtonGameOver->getLocalBounds();
+    menuButtonGameOver->setOrigin(sf::Vector2f(menuBounds.size.x/2, menuBounds.size.y/2));
+    menuButtonGameOver->setPosition(sf::Vector2f(Constants::WINDOW_WIDTH/2, Constants::WINDOW_HEIGHT/2 + 80));
+}
+
+void Game::updateGameOverMenu() {
+    // Обновляем счет
+    gameOverScore->setString("Your Score: " + std::to_string(score));
+    sf::FloatRect scoreBounds = gameOverScore->getLocalBounds();
+    gameOverScore->setOrigin(sf::Vector2f(scoreBounds.size.x/2, scoreBounds.size.y/2));
+    gameOverScore->setPosition(sf::Vector2f(Constants::WINDOW_WIDTH/2, Constants::WINDOW_HEIGHT/2 - 50));
+    
+    // Анимация кнопок при наведении
+    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+    restartButtonGameOver->setStyle(
+        restartButtonGameOver->getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y)) ? 
+        sf::Text::Bold : sf::Text::Regular
+    );
+    menuButtonGameOver->setStyle(
+        menuButtonGameOver->getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y)) ? 
+        sf::Text::Bold : sf::Text::Regular
+    );
 }
 
 void Game::run() {
@@ -216,11 +282,20 @@ void Game::processEvents() {
         }
         // Обработка событий в Game Over
         else if (gameState == State::GameOver) {
-            // Обработка нажатия Space для рестарта
-            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-                if (keyPressed->code == sf::Keyboard::Key::Space) {
+        updateGameOverMenu(); // Обновляем анимации
+        
+        if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonPressed>()) {
+            if (mouseButton->button == sf::Mouse::Button::Left) {
+                sf::Vector2f mousePos(static_cast<float>(mouseButton->position.x), 
+                                     static_cast<float>(mouseButton->position.y));
+                
+                if (restartButtonGameOver->getGlobalBounds().contains(mousePos)) {
                     resetGame();
                     gameState = State::Playing;
+                    } 
+                else if (menuButtonGameOver->getGlobalBounds().contains(mousePos)) {
+                    gameState = State::MainMenu;
+                    }
                 }
             }
         }
@@ -343,21 +418,32 @@ void Game::render() {
             window.draw(*exitPauseButton);
             break;
         }
-        case State::GameOver:
-            player.draw(window);
-            for (auto& enemy : enemies) {
-                enemy->draw(window);
-            }
-            for (auto& bullet : bullets) {
-                bullet->draw(window);
-            }
-            if (scoreText) {
-                window.draw(*scoreText);
-            }
-            if (gameOverText) {
-                window.draw(*gameOverText);
-            }
-            break;
+        case State::GameOver: {
+        // Рисуем игровой мир
+        player.draw(window);
+        for (auto& enemy : enemies) {
+            enemy->draw(window);
+        }
+        for (auto& bullet : bullets) {
+            bullet->draw(window);
+        }   
+        if (scoreText) {
+            window.draw(*scoreText);
+        }
+        
+        // Затемнение
+        sf::RectangleShape overlay(sf::Vector2f(Constants::WINDOW_WIDTH, Constants::WINDOW_HEIGHT));
+        overlay.setFillColor(sf::Color(0, 0, 0, 150));
+        window.draw(overlay);
+        
+        // Рисуем меню Game Over
+        window.draw(*gameOverPanel);
+        window.draw(*gameOverTitle);
+        window.draw(*gameOverScore);
+        window.draw(*restartButtonGameOver);
+        window.draw(*menuButtonGameOver);
+        break;
+        }
     }
     
     window.display();
@@ -400,7 +486,7 @@ void Game::checkCollisions() {
         if (rectsIntersect(player.getBounds(), enemy->getBounds())) {
             deathSound.play();
             gameState = State::GameOver;
-            updateGameOverText();
+            updateGameOverMenu();
             return;
         }
     }

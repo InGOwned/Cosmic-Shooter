@@ -15,7 +15,7 @@ public:
     void resetPosition();
 
     sf::FloatRect getBounds() const;
-    sf::Vector2f getPosition() const; // Новый метод
+    sf::Vector2f getPosition() const;
     sf::Vector2f getSize() const;
 
 private:

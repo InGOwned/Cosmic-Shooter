@@ -30,6 +30,8 @@ private:
     void updateGameOverText();
     void initMenu();
     void initPauseMenu();
+    void initGameOverMenu();
+    void updateGameOverMenu();
 
     State gameState = State::Playing;
 
@@ -64,6 +66,13 @@ private:
     std::unique_ptr<sf::Text> continueButton;
     std::unique_ptr<sf::Text> restartButton;
     std::unique_ptr<sf::Text> exitPauseButton;
+
+    // Game Over Menu
+    std::unique_ptr<sf::Text> gameOverTitle;
+    std::unique_ptr<sf::Text> gameOverScore;
+    std::unique_ptr<sf::RectangleShape> gameOverPanel;
+    std::unique_ptr<sf::Text> restartButtonGameOver;
+    std::unique_ptr<sf::Text> menuButtonGameOver;
 
     std::unique_ptr<sf::Text> gameOverText;
     bool gameOver = false;
