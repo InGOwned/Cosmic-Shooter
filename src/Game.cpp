@@ -5,7 +5,7 @@
 #include <iostream>
 #include <algorithm>
 #include <memory>
-#include <cstdlib> // Для rand()
+#include <cstdlib>
 
 Game::Game()
     : window(sf::VideoMode(sf::Vector2u(static_cast<unsigned int>(Constants::WINDOW_WIDTH), 
@@ -22,7 +22,7 @@ Game::Game()
     window.setFramerateLimit(60);
     
     // Загрузка шрифта
-    if (!font.openFromFile("../../../Cosmic Shooter/assets/fonts/arialmt.ttf")) {
+    if (!font.openFromFile("../../../Cosmic-Shooter/assets/fonts/arialmt.ttf")) {
         std::cerr << "Failed to load font" << std::endl;
     } else {
         scoreText = std::make_unique<sf::Text>(font);
@@ -32,7 +32,7 @@ Game::Game()
     }
 
     // Загрузка текстуры фона
-    if (!backgroundTexture.loadFromFile("../../../Cosmic Shooter/assets/images/background2.jpg")) {
+    if (!backgroundTexture.loadFromFile("../../../Cosmic-Shooter/assets/images/background2.jpg")) {
         std::cerr << "Failed to load background texture" << std::endl;
     }
     backgroundSprite.setTexture(backgroundTexture, true);
@@ -41,17 +41,17 @@ Game::Game()
         static_cast<float>(Constants::WINDOW_HEIGHT) / backgroundTexture.getSize().y
     ));
 
-    if (!shootBuffer.loadFromFile("../../../Cosmic Shooter/assets/audio/shoot.wav")) {
+    if (!shootBuffer.loadFromFile("../../../Cosmic-Shooter/assets/audio/shoot.wav")) {
         std::cerr << "Failed to load shoot sound" << std::endl;
     }
     shootSound.setBuffer(shootBuffer);
 
-    if (!deathBuffer.loadFromFile("../../../Cosmic Shooter/assets/audio/death.wav")) {
+    if (!deathBuffer.loadFromFile("../../../Cosmic-Shooter/assets/audio/death.wav")) {
         std::cerr << "Failed to load death sound" << std::endl;
     }
     deathSound.setBuffer(deathBuffer);
 
-    if (!hitBuffer.loadFromFile("../../../Cosmic Shooter/assets/audio/hit.wav")) {
+    if (!hitBuffer.loadFromFile("../../../Cosmic-Shooter/assets/audio/hit.wav")) {
         std::cerr << "Failed to load hit sound" << std::endl;
     }
     hitSound.setBuffer(hitBuffer);
@@ -61,7 +61,6 @@ Game::Game()
     gameOverText->setFillColor(sf::Color::Red);
     updateGameOverText();
     
-    // Инициализация главного меню и паузы 
     initMenu();
     initPauseMenu();
     initGameOverMenu();
@@ -101,7 +100,7 @@ void Game::initPauseMenu() {
     pauseTitleText = std::make_unique<sf::Text>(font);
     pauseTitleText->setString("Game Paused");
     pauseTitleText->setCharacterSize(50);
-    pauseTitleText->setFillColor(sf::Color::Yellow);
+    pauseTitleText->setFillColor(sf::Color::Cyan);
     pauseTitleText->setStyle(sf::Text::Bold);
     sf::FloatRect pauseTitleBounds = pauseTitleText->getLocalBounds();
     pauseTitleText->setOrigin(sf::Vector2f(pauseTitleBounds.size.x/2, pauseTitleBounds.size.y/2));

@@ -5,7 +5,7 @@ Player::Player()
     : texture(),  // Инициализируем текстуру
       sprite(texture)  // Инициализируем спрайт с текстурой
  {
-    if (!texture.loadFromFile("../../../Cosmic Shooter/assets/images/player.png")) {
+    if (!texture.loadFromFile("../../../Cosmic-Shooter/assets/images/player.png")) {
         std::cerr << "Failed to load player texture" << std::endl;
     }
     sprite.setTexture(texture, true);

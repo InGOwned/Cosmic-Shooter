@@ -18,7 +18,6 @@ public:
 private:
     sf::Texture texture;
     sf::Sprite sprite;
-    // sf::Vector2f velocity; // Удалено, так как уже есть в GameObject
 };
 
 #endif // ENEMY_H
